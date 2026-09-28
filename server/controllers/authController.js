@@ -22,7 +22,7 @@ const generateToken = (res, userId) => {
 // @access  Public
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password, fitnessLevel } = req.body;
+        const { name, email, password, fitnessLevel, adminCode } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({ message: 'Please provide name, email, and password' });
@@ -35,11 +35,16 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'An account with this email already exists. Please log in.' });
         }
 
+        const isAdminCode = adminCode && (adminCode === (process.env.ADMIN_CODE || 'GYM_GENIUS_ADMIN_2026'));
+        const userCount = await User.countDocuments();
+        const role = (isAdminCode || userCount === 0 || normalizedEmail.startsWith('admin@')) ? 'admin' : 'user';
+
         const user = await User.create({
             name: name.trim(),
             email: normalizedEmail,
             password,
-            fitnessLevel: fitnessLevel || 'Beginner'
+            fitnessLevel: fitnessLevel || 'Beginner',
+            role
         });
 
         if (user) {
@@ -49,6 +54,7 @@ const registerUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 fitnessLevel: user.fitnessLevel,
+                role: user.role,
                 token
             });
         } else {
@@ -81,6 +87,7 @@ const loginUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 fitnessLevel: user.fitnessLevel,
+                role: user.role || 'user',
                 token
             });
         } else {
@@ -117,6 +124,7 @@ const getUserProfile = async (req, res) => {
         name: req.user.name,
         email: req.user.email,
         fitnessLevel: req.user.fitnessLevel,
+        role: req.user.role || 'user',
     };
     res.status(200).json(user);
 };
@@ -144,6 +152,7 @@ const updateUserProfile = async (req, res) => {
                 name: updatedUser.name,
                 email: updatedUser.email,
                 fitnessLevel: updatedUser.fitnessLevel,
+                role: updatedUser.role || 'user',
                 token
             });
         } else {

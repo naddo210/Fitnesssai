@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema({
         enum: ['Beginner', 'Intermediate', 'Advanced'],
         default: 'Beginner',
     },
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user',
+    },
     badges: {
         type: [String],
         default: [],

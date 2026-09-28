@@ -12,6 +12,7 @@ import aiRoutes from './routes/aiRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import nutritionRoutes from './routes/nutritionRoutes.js';
 import leaderboardRoutes from './routes/leaderboardRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import { initKeepAliveCron } from './utils/keepAlive.js';
 
 dotenv.config();
@@ -77,6 +78,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/nutrition', nutritionRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
   res.send('Gym Genius API is running');
