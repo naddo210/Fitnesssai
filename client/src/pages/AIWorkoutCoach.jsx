@@ -5,7 +5,6 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Brain, Utensils, Search, Ruler, Loader2, Download, Play, ChevronDown, ChevronUp } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
-import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
 const AICoach = () => {
@@ -85,47 +84,176 @@ const AICoach = () => {
     }
   };
 
-  const downloadPDF = async () => {
-    const element = document.getElementById('ai-result-content');
-    if (!element) return;
-    
+  const downloadPDF = () => {
+    if (!result) return;
     setExportingPdf(true);
+
     try {
-        // Temporarily render without scroll clipping for clean PDF snapshot
-        const canvas = await html2canvas(element, { 
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#111827'
-        });
-        
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        
-        let heightLeft = pdfHeight;
-        let position = 0;
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 16;
+      const contentWidth = pageWidth - (margin * 2);
+      let y = margin;
 
-        // Multi-page PDF handling if content is long
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pageHeight;
+      // Dark Banner Header
+      doc.setFillColor(15, 23, 42); // slate-900
+      doc.rect(0, 0, pageWidth, 28, 'F');
 
-        while (heightLeft > 0) {
-          position = heightLeft - pdfHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-          heightLeft -= pageHeight;
+      // Title & Branding
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(15);
+      doc.text('GYM GENIUS AI', margin, 13);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(148, 163, 184); // slate-400
+      doc.text(`PERFORMANCE PROTOCOL • ${activeTab.toUpperCase()}`, margin, 20);
+
+      const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+      doc.text(`Date: ${dateStr}`, pageWidth - margin - 35, 13);
+
+      // Accent border
+      doc.setDrawColor(139, 92, 246); // purple-500
+      doc.setLineWidth(1.2);
+      doc.line(0, 28, pageWidth, 28);
+
+      y = 38;
+
+      const checkPageBreak = (neededHeight) => {
+        if (y + neededHeight > pageHeight - 18) {
+          doc.addPage();
+          y = 20;
         }
+      };
 
-        const dateStr = new Date().toISOString().split('T')[0];
-        pdf.save(`GymGenius_${activeTab}_plan_${dateStr}.pdf`);
+      if (activeTab === 'exercise' && Array.isArray(result)) {
+        result.forEach((ex, idx) => {
+          checkPageBreak(25);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(12);
+          doc.setTextColor(139, 92, 246);
+          doc.text(`${idx + 1}. ${ex.name || 'Exercise'}`, margin, y);
+          y += 6;
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.setTextColor(31, 41, 55);
+
+          if (ex.formCues) {
+            checkPageBreak(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Form Cues: ', margin, y);
+            doc.setFont('helvetica', 'normal');
+            const lines = doc.splitTextToSize(ex.formCues, contentWidth - 22);
+            doc.text(lines, margin + 22, y);
+            y += (lines.length * 4.5) + 2.5;
+          }
+
+          if (ex.commonMistakes) {
+            checkPageBreak(10);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(220, 38, 38);
+            doc.text('Mistakes: ', margin, y);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(31, 41, 55);
+            const lines = doc.splitTextToSize(ex.commonMistakes, contentWidth - 22);
+            doc.text(lines, margin + 22, y);
+            y += (lines.length * 4.5) + 2.5;
+          }
+
+          if (ex.injuryRisks) {
+            checkPageBreak(10);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(217, 119, 6);
+            doc.text('Injury Risks: ', margin, y);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(31, 41, 55);
+            const lines = doc.splitTextToSize(ex.injuryRisks, contentWidth - 22);
+            doc.text(lines, margin + 22, y);
+            y += (lines.length * 4.5) + 2.5;
+          }
+          y += 3;
+        });
+      } else {
+        const rawText = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+        const lines = rawText.split('\n');
+
+        for (const rawLine of lines) {
+          const line = rawLine.trim();
+          if (!line) {
+            y += 2.5;
+            continue;
+          }
+
+          if (line.startsWith('#')) {
+            checkPageBreak(14);
+            const headerText = line.replace(/^#+\s*/, '').replace(/\*\*/g, '');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12.5);
+            doc.setTextColor(15, 23, 42);
+            doc.text(headerText, margin, y);
+            y += 6.5;
+          } else if (line.startsWith('|')) {
+            if (line.includes('---')) continue;
+            checkPageBreak(8);
+            const cells = line.split('|').map(c => c.trim().replace(/\*\*/g, '')).filter(Boolean);
+            const colWidth = contentWidth / (cells.length || 1);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8.5);
+            doc.setTextColor(51, 65, 85);
+            cells.forEach((cell, i) => {
+              const truncated = doc.splitTextToSize(cell, colWidth - 2)[0] || '';
+              doc.text(truncated, margin + (i * colWidth), y);
+            });
+            y += 5.5;
+          } else {
+            checkPageBreak(7);
+            const clean = line.replace(/\*\*/g, '');
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(51, 65, 85);
+            const split = doc.splitTextToSize(clean, contentWidth);
+            split.forEach(s => {
+              checkPageBreak(4.5);
+              doc.text(s, margin, y);
+              y += 4.5;
+            });
+          }
+        }
+      }
+
+      // Add footers with page numbers
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text('GymGenius AI • Confidential Training Protocol', margin, pageHeight - 8);
+        doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 20, pageHeight - 8);
+      }
+
+      const fileDate = new Date().toISOString().split('T')[0];
+      doc.save(`GymGenius_${activeTab}_plan_${fileDate}.pdf`);
     } catch (err) {
-        console.error("PDF Export failed:", err);
-        alert("Failed to download PDF. Please try again.");
+      console.error("PDF Export error:", err);
+      // Resilient fallback: download markdown text file
+      try {
+        const textContent = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+        const blob = new Blob([textContent], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `GymGenius_${activeTab}_plan.md`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (fallbackErr) {
+        alert("Failed to export PDF. Please copy your plan text directly.");
+      }
     } finally {
-        setExportingPdf(false);
+      setExportingPdf(false);
     }
   };
 
