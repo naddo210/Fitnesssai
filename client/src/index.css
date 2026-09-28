@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-heading: "Outfit", sans-serif;
+  --color-primary: #8A2BE2;
+  /* Electric Purple */
+  --color-secondary: #00FFFF;
+  /* Neon Cyan */
+  --color-dark: #121212;
+  --color-light: #FAFAFA;
+}
+
+@layer base {
+  body {
+    @apply bg-dark text-light font-sans;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-bold;
+  }
+}
