@@ -1,4 +1,4 @@
-﻿name: Render Free Tier Keep-Alive
+name: Render Free Tier Keep-Alive
 
 on:
   schedule:
@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Ping Render Backend
         run: |
-          URL="${{ secrets.BACKEND_URL || 'https://your-app-name.onrender.com' }}"
+          URL="${{ secrets.BACKEND_URL || 'https://fitnesssai.onrender.com' }}"
           echo "Pinging backend health endpoint: $URL/api/health"
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$URL/api/health" || true)
           echo "Received HTTP status code: $RESPONSE"

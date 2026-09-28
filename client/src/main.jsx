@@ -5,7 +5,17 @@ import App from './App.jsx'
 import axios from 'axios';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'http://localhost:5000'; // Make sure this matches server port
+// Production backend on Render, fallback to local during offline dev
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'https://fitnesssai.onrender.com';
+
+// Add request interceptor to attach Bearer token if stored
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => Promise.reject(error));
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
