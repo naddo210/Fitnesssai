@@ -84,6 +84,15 @@ const AICoach = () => {
     }
   };
 
+  const cleanPdfText = (str) => {
+    if (!str) return '';
+    return str
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}]/gu, '') // Strip emojis causing garbled characters
+      .replace(/[^\x20-\x7E\n\r\t]/g, ' ') // Strip non-ASCII Latin-1 artifacts
+      .replace(/[ \t]+/g, ' ')
+      .trim();
+  };
+
   const downloadPDF = () => {
     if (!result) return;
     setExportingPdf(true);
@@ -96,30 +105,32 @@ const AICoach = () => {
       const contentWidth = pageWidth - (margin * 2);
       let y = margin;
 
-      // Dark Banner Header
+      // Executive Header Banner
       doc.setFillColor(15, 23, 42); // slate-900
-      doc.rect(0, 0, pageWidth, 28, 'F');
+      doc.rect(0, 0, pageWidth, 26, 'F');
 
-      // Title & Branding
+      // Brand Logo & Title
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(15);
-      doc.text('GYM GENIUS AI', margin, 13);
+      doc.setFontSize(14);
+      doc.text('GYM GENIUS AI', margin, 12);
 
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.5);
-      doc.setTextColor(148, 163, 184); // slate-400
-      doc.text(`PERFORMANCE PROTOCOL • ${activeTab.toUpperCase()}`, margin, 20);
+      doc.setFontSize(8);
+      doc.setTextColor(196, 181, 253); // purple-300
+      doc.text(`ELITE PERFORMANCE PROTOCOL • ${activeTab.toUpperCase()}`, margin, 18);
 
       const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-      doc.text(`Date: ${dateStr}`, pageWidth - margin - 35, 13);
+      doc.setTextColor(148, 163, 184); // slate-400
+      doc.text(`DATE: ${dateStr}`, pageWidth - margin - 35, 12);
+      doc.text('STATUS: VERIFIED', pageWidth - margin - 35, 18);
 
-      // Accent border
-      doc.setDrawColor(139, 92, 246); // purple-500
-      doc.setLineWidth(1.2);
-      doc.line(0, 28, pageWidth, 28);
+      // Violet Accent Divider Line
+      doc.setDrawColor(124, 58, 237); // violet-600
+      doc.setLineWidth(1);
+      doc.line(0, 26, pageWidth, 26);
 
-      y = 38;
+      y = 35;
 
       const checkPageBreak = (neededHeight) => {
         if (y + neededHeight > pageHeight - 18) {
@@ -130,109 +141,256 @@ const AICoach = () => {
 
       if (activeTab === 'exercise' && Array.isArray(result)) {
         result.forEach((ex, idx) => {
-          checkPageBreak(25);
+          checkPageBreak(32);
+
+          // Exercise Card Header Bar
+          doc.setFillColor(243, 244, 246); // gray-100
+          doc.roundedRect(margin, y - 4, contentWidth, 8, 1.5, 1.5, 'F');
+
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(12);
-          doc.setTextColor(139, 92, 246);
-          doc.text(`${idx + 1}. ${ex.name || 'Exercise'}`, margin, y);
-          y += 6;
+          doc.setFontSize(10.5);
+          doc.setTextColor(109, 40, 217); // purple-700
+          doc.text(`${idx + 1}. ${cleanPdfText(ex.name)}`, margin + 3.5, y + 1.5);
+          y += 8;
 
           doc.setFont('helvetica', 'normal');
-          doc.setFontSize(9);
-          doc.setTextColor(31, 41, 55);
+          doc.setFontSize(8.5);
 
           if (ex.formCues) {
-            checkPageBreak(10);
+            checkPageBreak(12);
             doc.setFont('helvetica', 'bold');
-            doc.text('Form Cues: ', margin, y);
+            doc.setTextColor(30, 41, 59);
+            doc.text('Form Cues: ', margin + 4, y);
             doc.setFont('helvetica', 'normal');
-            const lines = doc.splitTextToSize(ex.formCues, contentWidth - 22);
-            doc.text(lines, margin + 22, y);
-            y += (lines.length * 4.5) + 2.5;
+            doc.setTextColor(51, 65, 85);
+            const cues = doc.splitTextToSize(cleanPdfText(ex.formCues), contentWidth - 30);
+            doc.text(cues, margin + 24, y);
+            y += (cues.length * 4.2) + 2;
           }
 
           if (ex.commonMistakes) {
-            checkPageBreak(10);
+            checkPageBreak(12);
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor(220, 38, 38);
-            doc.text('Mistakes: ', margin, y);
+            doc.setTextColor(225, 29, 72); // rose-600
+            doc.text('Mistakes: ', margin + 4, y);
             doc.setFont('helvetica', 'normal');
-            doc.setTextColor(31, 41, 55);
-            const lines = doc.splitTextToSize(ex.commonMistakes, contentWidth - 22);
-            doc.text(lines, margin + 22, y);
-            y += (lines.length * 4.5) + 2.5;
+            doc.setTextColor(51, 65, 85);
+            const mistakes = doc.splitTextToSize(cleanPdfText(ex.commonMistakes), contentWidth - 30);
+            doc.text(mistakes, margin + 24, y);
+            y += (mistakes.length * 4.2) + 2;
           }
 
           if (ex.injuryRisks) {
-            checkPageBreak(10);
+            checkPageBreak(12);
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor(217, 119, 6);
-            doc.text('Injury Risks: ', margin, y);
+            doc.setTextColor(217, 119, 6); // amber-600
+            doc.text('Risks: ', margin + 4, y);
             doc.setFont('helvetica', 'normal');
-            doc.setTextColor(31, 41, 55);
-            const lines = doc.splitTextToSize(ex.injuryRisks, contentWidth - 22);
-            doc.text(lines, margin + 22, y);
-            y += (lines.length * 4.5) + 2.5;
+            doc.setTextColor(51, 65, 85);
+            const risks = doc.splitTextToSize(cleanPdfText(ex.injuryRisks), contentWidth - 30);
+            doc.text(risks, margin + 24, y);
+            y += (risks.length * 4.2) + 4;
           }
-          y += 3;
+          y += 2;
         });
       } else {
         const rawText = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
         const lines = rawText.split('\n');
 
-        for (const rawLine of lines) {
-          const line = rawLine.trim();
-          if (!line) {
-            y += 2.5;
+        for (let i = 0; i < lines.length; i++) {
+          const rawLine = cleanPdfText(lines[i]);
+          if (!rawLine) {
+            y += 2;
             continue;
           }
 
-          if (line.startsWith('#')) {
-            checkPageBreak(14);
-            const headerText = line.replace(/^#+\s*/, '').replace(/\*\*/g, '');
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(12.5);
-            doc.setTextColor(15, 23, 42);
-            doc.text(headerText, margin, y);
-            y += 6.5;
-          } else if (line.startsWith('|')) {
-            if (line.includes('---')) continue;
-            checkPageBreak(8);
-            const cells = line.split('|').map(c => c.trim().replace(/\*\*/g, '')).filter(Boolean);
-            const colWidth = contentWidth / (cells.length || 1);
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8.5);
-            doc.setTextColor(51, 65, 85);
-            cells.forEach((cell, i) => {
-              const truncated = doc.splitTextToSize(cell, colWidth - 2)[0] || '';
-              doc.text(truncated, margin + (i * colWidth), y);
-            });
-            y += 5.5;
-          } else {
-            checkPageBreak(7);
-            const clean = line.replace(/\*\*/g, '');
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9);
-            doc.setTextColor(51, 65, 85);
-            const split = doc.splitTextToSize(clean, contentWidth);
-            split.forEach(s => {
-              checkPageBreak(4.5);
-              doc.text(s, margin, y);
-              y += 4.5;
-            });
+          // 1. Divider line (---)
+          if (rawLine === '---' || rawLine.startsWith('---')) {
+            checkPageBreak(6);
+            doc.setDrawColor(226, 232, 240); // slate-200
+            doc.setLineWidth(0.5);
+            doc.line(margin, y + 2, margin + contentWidth, y + 2);
+            y += 6;
+            continue;
           }
+
+          // 2. Day Header Banner (e.g. DAY 1:, DAY 2:)
+          if (/^#*\s*DAY\s*\d+/i.test(rawLine)) {
+            checkPageBreak(18);
+            const dayText = rawLine.replace(/^#+\s*/, '').replace(/\*\*/g, '').trim();
+
+            // Rounded Indigo Section Bar
+            doc.setFillColor(30, 27, 75); // indigo-950
+            doc.roundedRect(margin, y, contentWidth, 8, 1.5, 1.5, 'F');
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.setTextColor(255, 255, 255);
+            doc.text(dayText, margin + 4, y + 5.5);
+            y += 11;
+            continue;
+          }
+
+          // 3. Main Section Header (# Program Overview, etc.)
+          if (rawLine.startsWith('#')) {
+            checkPageBreak(12);
+            const title = rawLine.replace(/^#+\s*/, '').replace(/\*\*/g, '').trim();
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(13);
+            doc.setTextColor(15, 23, 42); // slate-900
+            doc.text(title, margin, y);
+            y += 6.5;
+            continue;
+          }
+
+          // 4. Critical Notice Alert Card
+          if (/CRITICAL NOTICE|WARNING|IMPORTANT/i.test(rawLine) && !rawLine.startsWith('*')) {
+            checkPageBreak(22);
+            const alertBody = rawLine.replace(/\*\*/g, '').replace(/\*/g, '').trim();
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            const splitAlert = doc.splitTextToSize(alertBody, contentWidth - 10);
+            const boxH = (splitAlert.length * 3.8) + 6;
+
+            doc.setFillColor(254, 242, 242); // red-50
+            doc.roundedRect(margin, y, contentWidth, boxH, 1.5, 1.5, 'F');
+            doc.setFillColor(239, 68, 68); // red-500
+            doc.rect(margin, y, 2.5, boxH, 'F');
+
+            doc.setTextColor(153, 27, 27); // red-900
+            doc.text(splitAlert, margin + 5, y + 4.5);
+            y += boxH + 3.5;
+            continue;
+          }
+
+          // 5. Coach's Note Card (> Coach's Note: ...)
+          if (rawLine.startsWith('>') || /Coach'?s Note/i.test(rawLine)) {
+            checkPageBreak(20);
+            const noteBody = rawLine.replace(/^>\s*/, '').replace(/^Coach'?s Note:?\s*/i, '').replace(/\*\*/g, '').trim();
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            const splitNote = doc.splitTextToSize(noteBody, contentWidth - 12);
+            const boxH = (splitNote.length * 3.8) + 9;
+
+            // Soft purple card
+            doc.setFillColor(245, 243, 255); // purple-50
+            doc.roundedRect(margin, y, contentWidth, boxH, 1.5, 1.5, 'F');
+            doc.setFillColor(124, 58, 237); // violet-600
+            doc.rect(margin, y, 2.5, boxH, 'F');
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7.5);
+            doc.setTextColor(109, 40, 217); // purple-700
+            doc.text("COACH'S INSIGHT", margin + 5, y + 4.2);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(51, 65, 85); // slate-700
+            doc.text(splitNote, margin + 5, y + 8);
+            y += boxH + 3.5;
+            continue;
+          }
+
+          // 6. Focus Subtitle (*Focus: ...*)
+          if (/^\*?Focus:/i.test(rawLine)) {
+            checkPageBreak(7);
+            const focusBody = rawLine.replace(/^\*?Focus:\s*/i, '').replace(/\*$/, '').replace(/\*\*/g, '').trim();
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8);
+            doc.setTextColor(124, 58, 237); // purple-600
+            doc.text('Target Focus: ', margin, y);
+
+            const focusW = doc.getTextWidth('Target Focus: ');
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(71, 85, 105);
+            const splitFocus = doc.splitTextToSize(focusBody, contentWidth - focusW);
+            doc.text(splitFocus[0] || '', margin + focusW, y);
+            if (splitFocus.length > 1) {
+              for (let f = 1; f < splitFocus.length; f++) {
+                y += 3.8;
+                doc.text(splitFocus[f], margin + focusW, y);
+              }
+            }
+            y += 4.5;
+            continue;
+          }
+
+          // 7. Exercises and Bullet points (* Barbell Bench Press: 4 sets x 8-10 reps)
+          if (rawLine.startsWith('*') || rawLine.startsWith('-') || /^\d+\./.test(rawLine)) {
+            checkPageBreak(6);
+            const cleanItem = rawLine.replace(/^[\*\-\d\.]+\s*/, '').replace(/\*\*/g, '').trim();
+
+            // Stylish bullet circle
+            doc.setFillColor(139, 92, 246); // purple-500
+            doc.circle(margin + 2, y - 0.8, 0.8, 'F');
+
+            const colonIdx = cleanItem.indexOf(':');
+            if (colonIdx !== -1 && colonIdx < 35) {
+              const exName = cleanItem.substring(0, colonIdx).trim();
+              const exDetails = cleanItem.substring(colonIdx + 1).trim();
+
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(8.5);
+              doc.setTextColor(15, 23, 42); // slate-900
+              doc.text(exName + ':', margin + 5, y);
+
+              const nameWidth = doc.getTextWidth(exName + ': ');
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(71, 85, 105); // slate-600
+
+              const splitDet = doc.splitTextToSize(exDetails, contentWidth - 6 - nameWidth);
+              doc.text(splitDet[0] || '', margin + 5 + nameWidth, y);
+
+              if (splitDet.length > 1) {
+                for (let d = 1; d < splitDet.length; d++) {
+                  y += 3.8;
+                  doc.text(splitDet[d], margin + 5, y);
+                }
+              }
+              y += 4.2;
+            } else {
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(8.5);
+              doc.setTextColor(30, 41, 59);
+              const splitText = doc.splitTextToSize(cleanItem, contentWidth - 6);
+              splitText.forEach(t => {
+                checkPageBreak(4);
+                doc.text(t, margin + 5, y);
+                y += 3.8;
+              });
+              y += 0.5;
+            }
+            continue;
+          }
+
+          // 8. Regular text paragraph
+          checkPageBreak(5);
+          const cleanText = rawLine.replace(/\*\*/g, '').replace(/\*/g, '');
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8.5);
+          doc.setTextColor(51, 65, 85);
+          const splitLines = doc.splitTextToSize(cleanText, contentWidth);
+          splitLines.forEach(l => {
+            checkPageBreak(4);
+            doc.text(l, margin, y);
+            y += 3.8;
+          });
+          y += 1.5;
         }
       }
 
-      // Add footers with page numbers
+      // Footer on each page
       const totalPages = doc.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
+        doc.setDrawColor(241, 245, 249); // slate-100
+        doc.line(margin, pageHeight - 10, margin + contentWidth, pageHeight - 10);
+
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
-        doc.text('GymGenius AI • Confidential Training Protocol', margin, pageHeight - 8);
-        doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 20, pageHeight - 8);
+        doc.setFontSize(7.5);
+        doc.setTextColor(148, 163, 184); // slate-400
+        doc.text('GymGenius AI • Certified Training & Nutrition Protocol', margin, pageHeight - 6);
+        doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 18, pageHeight - 6);
       }
 
       const fileDate = new Date().toISOString().split('T')[0];
@@ -256,6 +414,7 @@ const AICoach = () => {
       setExportingPdf(false);
     }
   };
+
 
   // Helper to render content based on active tab and result type
   const renderContent = () => {
