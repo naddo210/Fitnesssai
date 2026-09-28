@@ -1,0 +1,23 @@
+﻿name: Render Free Tier Keep-Alive
+
+on:
+  schedule:
+    # Run every 14 minutes (Render spins down after 15 minutes of inactivity)
+    - cron: '*/14 * * * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Backend
+        run: |
+          URL="${{ secrets.BACKEND_URL || 'https://your-app-name.onrender.com' }}"
+          echo "Pinging backend health endpoint: $URL/api/health"
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$URL/api/health" || true)
+          echo "Received HTTP status code: $RESPONSE"
+          if [ "$RESPONSE" -eq 200 ]; then
+            echo "✅ Backend is healthy and awake!"
+          else
+            echo "⚠️ Non-200 response ($RESPONSE), but request was delivered to wake server."
+          fi

@@ -1,0 +1,33 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#120b24"/>
+      <stop offset="100%" stop-color="#07070b"/>
+    </linearGradient>
+    <linearGradient id="neonCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00FFFF"/>
+      <stop offset="100%" stop-color="#00B4D8"/>
+    </linearGradient>
+    <linearGradient id="neonPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#8A2BE2"/>
+    </linearGradient>
+    <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <rect width="64" height="64" rx="16" fill="url(#bgGrad)"/>
+  <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="15.25" stroke="url(#neonPurple)" stroke-width="1.5" stroke-opacity="0.4"/>
+
+  <rect x="11" y="20" width="6" height="24" rx="3" fill="url(#neonCyan)" filter="url(#cyanGlow)"/>
+  <rect x="17" y="24" width="4" height="16" rx="2" fill="url(#neonPurple)"/>
+
+  <rect x="21" y="29.5" width="22" height="5" rx="2" fill="#E2E8F0"/>
+
+  <rect x="43" y="24" width="4" height="16" rx="2" fill="url(#neonPurple)"/>
+  <rect x="47" y="20" width="6" height="24" rx="3" fill="url(#neonCyan)" filter="url(#cyanGlow)"/>
+
+  <path d="M35 15L25 32H33L29 49L41 30H33L35 15Z" fill="url(#neonCyan)" filter="url(#cyanGlow)"/>
+</svg>
