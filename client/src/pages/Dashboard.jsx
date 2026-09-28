@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../co
 import { Button } from "../components/ui/Button";
 import { 
   ArrowRight, Dumbbell, Target, Flame, Calendar, Loader2, 
-  Sparkles, Quote, RefreshCw, Zap, Award, Activity 
+  Sparkles, Quote, RefreshCw, Zap, Award, Activity, Brain 
 } from "lucide-react";
 
 const Dashboard = () => {

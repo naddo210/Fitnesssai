@@ -4,21 +4,29 @@ import User from '../models/User.js';
 const protect = async (req, res, next) => {
     let token;
 
-    token = req.cookies.jwt;
+    // Check Authorization: Bearer <token> header first (essential for cross-origin SPA requests)
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies && req.cookies.jwt) {
+        token = req.cookies.jwt;
+    }
 
     if (token) {
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'gymgenius_secret_key_123');
             req.user = await User.findById(decoded.userId).select('-password');
+            
+            if (!req.user) {
+                return res.status(401).json({ message: 'User not found' });
+            }
 
-            next();
+            return next();
         } catch (error) {
-            console.error(error);
-            res.status(401).json({ message: 'Not authorized, token failed' });
+            console.error('Auth verification error:', error.message);
+            return res.status(401).json({ message: 'Not authorized, token invalid or expired' });
         }
     } else {
-        res.status(401).json({ message: 'Not authorized, no token' });
+        return res.status(401).json({ message: 'Not authorized, no authentication token' });
     }
 };
 
