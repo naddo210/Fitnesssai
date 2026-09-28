@@ -3,9 +3,10 @@ import axios from 'axios';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
-import { Brain, Utensils, Search, Ruler, Loader2, Download, Play, ChevronDown, ChevronUp } from "lucide-react";
+import { Brain, Utensils, Search, Ruler, Loader2, Download, Play, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import { jsPDF } from 'jspdf';
+import { getExerciseEmbedUrl } from '../utils/exerciseVideos';
 
 const AICoach = () => {
   const [activeTab, setActiveTab] = useState('workout');
@@ -472,18 +473,29 @@ const AICoach = () => {
                               <span className="font-semibold text-amber-400">⚠️ Injury Risks:</span> {ex.injuryRisks || "None listed"}
                           </div>
 
-                          {/* In-App YouTube Iframe Player - Keeps user on page */}
+                          {/* In-App YouTube Iframe Player - Direct Verified Video ID */}
                           {openVideoIdx === idx && (
                             <div className="mt-4 pt-3 border-t border-gray-700/60">
-                              <p className="text-xs text-gray-400 mb-2 flex items-center gap-1 font-medium">
-                                <Play className="w-3 h-3 text-red-500" /> Embedded YouTube Form Guide:
-                              </p>
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="text-xs text-gray-300 flex items-center gap-1.5 font-medium">
+                                  <Play className="w-3.5 h-3.5 text-red-500 fill-current" /> Form Tutorial Video:
+                                </p>
+                                <a 
+                                  href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + ' proper form tutorial')}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-primary hover:text-purple-300 flex items-center gap-1 transition font-medium"
+                                >
+                                  <span>Search More on YouTube</span>
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              </div>
                               <div className="aspect-video w-full rounded-xl overflow-hidden border border-gray-700 bg-black shadow-inner">
                                 <iframe
                                   className="w-full h-full"
-                                  src={`https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(ex.name + ' exercise proper form')}&autoplay=1`}
+                                  src={getExerciseEmbedUrl(ex.name)}
                                   title={`${ex.name} Form Guide`}
-                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                   allowFullScreen
                                 />
                               </div>
