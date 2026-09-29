@@ -1,6 +1,7 @@
 import Goal from '../models/Goal.js';
 import Workout from '../models/Workout.js';
-import WeightProgress from '../models/WeightProgress.js';
+import User from '../models/User.js';
+import { recordDailyActivity } from '../utils/activityTracker.js';
 
 // @desc    Get Dashboard Statistics
 // @route   GET /api/dashboard
@@ -9,47 +10,25 @@ const getDashboardStats = async (req, res) => {
     try {
         const userId = req.user._id;
 
-        // 1. Active Goals Count
+        // 1. Record daily activity / visit
+        let userDoc = await User.findById(userId);
+        if (userDoc) {
+            await recordDailyActivity(userDoc, false);
+        }
+
+        // 2. Active Goals Count
         const activeGoalsCount = await Goal.countDocuments({ userId });
 
-        // 2. Total Workouts
+        // 3. Total Workouts
         const workouts = await Workout.find({ userId }).sort({ date: -1 });
         const totalWorkouts = workouts.length;
 
-        // 3. Current Streak (Consecutive days with workouts)
-        let streak = 0;
-        if (workouts.length > 0) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+        // 4. Current Streak & Points (from verified user document)
+        const streak = userDoc ? (userDoc.currentStreak || 1) : 0;
+        const points = userDoc ? (userDoc.points || 0) : 0;
+        const badges = userDoc ? (userDoc.badges || []) : [];
 
-            // Check if last workout was today or yesterday to keep streak alive
-            const lastWorkoutDate = new Date(workouts[0].date);
-            lastWorkoutDate.setHours(0, 0, 0, 0);
-
-            const diffTime = Math.abs(today - lastWorkoutDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays <= 1) {
-                streak = 1;
-                // Calculate backwards
-                for (let i = 0; i < workouts.length - 1; i++) {
-                    const current = new Date(workouts[i].date);
-                    const next = new Date(workouts[i + 1].date);
-                    current.setHours(0, 0, 0, 0);
-                    next.setHours(0, 0, 0, 0);
-
-                    const gap = (current - next) / (1000 * 60 * 60 * 24);
-                    if (gap === 1) {
-                        streak++;
-                    } else if (gap > 1) {
-                        break;
-                    }
-                    // if gap is 0 (same day), continue
-                }
-            }
-        }
-
-        // 4. Recent Activity (Last 3 workouts)
+        // 5. Recent Activity (Last 3 workouts)
         const recentActivity = workouts.slice(0, 3).map(w => ({
             id: w._id,
             workoutName: w.workoutName,
@@ -61,6 +40,8 @@ const getDashboardStats = async (req, res) => {
             activeGoals: activeGoalsCount,
             totalWorkouts,
             streak,
+            points,
+            badges,
             recentActivity
         });
 

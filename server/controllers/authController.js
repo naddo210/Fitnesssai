@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import { recordDailyActivity } from '../utils/activityTracker.js';
 
 const generateToken = (res, userId) => {
     const token = jwt.sign({ userId }, process.env.JWT_SECRET || 'gymgenius_secret_key_123', {
@@ -82,12 +83,19 @@ const loginUser = async (req, res) => {
 
         if (user && (await user.matchPassword(password))) {
             const token = generateToken(res, user._id);
+            // Record daily visit and maintain streak
+            await recordDailyActivity(user, false);
+
             res.json({
                 _id: user._id,
                 name: user.name,
                 email: user.email,
                 fitnessLevel: user.fitnessLevel,
                 role: user.role || 'user',
+                currentStreak: user.currentStreak || 1,
+                points: user.points || 0,
+                badges: user.badges || [],
+                totalWorkouts: user.totalWorkouts || 0,
                 token
             });
         } else {
@@ -119,12 +127,21 @@ const getUserProfile = async (req, res) => {
     if (!req.user) {
         return res.status(401).json({ message: 'Not authorized' });
     }
+    const userDoc = await User.findById(req.user._id);
+    if (userDoc) {
+        await recordDailyActivity(userDoc, false);
+    }
+    const target = userDoc || req.user;
     const user = {
-        _id: req.user._id,
-        name: req.user.name,
-        email: req.user.email,
-        fitnessLevel: req.user.fitnessLevel,
-        role: req.user.role || 'user',
+        _id: target._id,
+        name: target.name,
+        email: target.email,
+        fitnessLevel: target.fitnessLevel,
+        role: target.role || 'user',
+        currentStreak: target.currentStreak || 1,
+        points: target.points || 0,
+        badges: target.badges || [],
+        totalWorkouts: target.totalWorkouts || 0,
     };
     res.status(200).json(user);
 };

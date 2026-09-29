@@ -1,5 +1,6 @@
 import Workout from '../models/Workout.js';
 import User from '../models/User.js';
+import { recordDailyActivity } from '../utils/activityTracker.js';
 
 // @desc    Get workouts
 // @route   GET /api/workouts
@@ -28,66 +29,26 @@ const logWorkout = async (req, res) => {
         date: date || Date.now(),
     });
 
-    // --- Gamification Logic ---
+    // --- Gamification & Daily Activity Logic ---
     const user = await User.findById(req.user._id);
+    let newBadges = [];
+    let userStats = { streak: 1, total: 1, points: 50 };
 
-    // 1. Update Total Workouts
-    user.totalWorkouts = (user.totalWorkouts || 0) + 1;
-
-    // 2. Update Streak
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to midnight
-
-    let lastDate = user.lastWorkoutDate ? new Date(user.lastWorkoutDate) : null;
-    if (lastDate) lastDate.setHours(0, 0, 0, 0);
-
-    if (lastDate) {
-        const diffTime = Math.abs(today - lastDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 1) {
-            // Consecutive day
-            user.currentStreak += 1;
-        } else if (diffDays > 1) {
-            // Broken streak (allow logging multiple times same day without resetting)
-            if (diffDays > 0) user.currentStreak = 1;
-        }
-    } else {
-        // First workout ever
-        user.currentStreak = 1;
+    if (user) {
+        const activityResult = await recordDailyActivity(user, true);
+        newBadges = activityResult.newBadges || [];
+        userStats = {
+            streak: user.currentStreak,
+            total: user.totalWorkouts,
+            points: user.points
+        };
     }
-
-    user.lastWorkoutDate = Date.now();
-
-    // 3. Award Badges
-    const newBadges = [];
-
-    // Badge: "First Steps" (1st workout)
-    if (user.totalWorkouts === 1 && !user.badges.includes("First Steps 🥇")) {
-        user.badges.push("First Steps 🥇");
-        newBadges.push("First Steps 🥇");
-    }
-
-    // Badge: "On Fire" (7 day streak)
-    if (user.currentStreak >= 7 && !user.badges.includes("On Fire 🔥")) {
-        user.badges.push("On Fire 🔥");
-        newBadges.push("On Fire 🔥");
-    }
-
-    // Badge: "Century Club" (100 workouts)
-    if (user.totalWorkouts >= 100 && !user.badges.includes("Century Club 🏆")) {
-        user.badges.push("Century Club 🏆");
-        newBadges.push("Century Club 🏆");
-    }
-
-    await user.save();
-    // --------------------------
+    // ------------------------------------------
 
     res.status(200).json({
-        workout, newBadges, userStats: {
-            streak: user.currentStreak,
-            total: user.totalWorkouts
-        }
+        workout,
+        newBadges,
+        userStats
     });
 };
 
