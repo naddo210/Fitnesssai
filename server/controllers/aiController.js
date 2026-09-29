@@ -114,4 +114,54 @@ const getMotivation = async (req, res) => {
     }
 };
 
-export { generateWorkoutPlan, generateMealPlan, generateExerciseGuide, generateHeightGuidance, getMotivation };
+// @desc    Generate Viral Challenge Protocol
+// @route   POST /api/ai/challenge
+// @access  Private
+const generateChallengeProtocol = async (req, res) => {
+    const { challengeTitle, promptDirective, fitnessLevel } = req.body;
+
+    const systemPrompt = `You are an elite, championship-level strength and conditioning director.
+Create an epic, comprehensive, and highly motivating athletic blueprint for this viral fitness challenge:
+CHALLENGE: "${challengeTitle || 'Fitness Challenge'}" (Target Level: ${fitnessLevel || 'Intermediate'})
+SPECIFIC FOCUS: "${promptDirective || 'Comprehensive challenge protocol'}"
+
+Format your response strictly using rich, clean GitHub Flavored Markdown with:
+1. # 🔥 ${challengeTitle ? challengeTitle.toUpperCase() : 'CHALLENGE'} PROTOCOL
+   A high-energy 2-sentence mission statement.
+
+2. ## 🎯 THE 4 NON-NEGOTIABLE PROTOCOL RULES
+   List 4 specific, actionable core habits (e.g. hydration, protein, training window, sleep).
+
+3. ## 🗓️ STRUCTURED TRAINING SCHEDULE
+   Use clean Markdown tables with columns:
+   | Day / Phase | Workout Focus | Key Movements | Target Sets & Reps | Intensity / Timing |
+
+4. ## 🥗 NUTRITION & FUELING BLUEPRINT
+   - Exact daily dietary targets (calories, protein ratio, hydration).
+   - Specific meal examples (Pre-workout, Post-workout, Main recovery meal).
+
+5. ## ⚡ SECRET WEAPON & PROGRESSION
+   - How to progressive overload and track progress week over week.
+   - Rest & recovery protocol.
+
+6. > **COACH'S FINAL CHARGE:** A gritty, inspiring quote to ignite the athlete's warrior spirit.
+
+Make it clean, realistic, science-backed, and visually stunning with bolding, lists, and tables. Avoid generic filler.`;
+
+    try {
+        const result = await generateContent(systemPrompt);
+        res.status(200).json({ result });
+    } catch (error) {
+        console.error('Challenge Generation Error:', error.message);
+        res.status(500).json({ message: error.message || 'Error generating challenge protocol' });
+    }
+};
+
+export { 
+    generateWorkoutPlan, 
+    generateMealPlan, 
+    generateExerciseGuide, 
+    generateHeightGuidance, 
+    getMotivation,
+    generateChallengeProtocol 
+};

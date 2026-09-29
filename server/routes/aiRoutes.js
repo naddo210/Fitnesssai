@@ -1,5 +1,11 @@
-import express from 'express';
-import { generateWorkoutPlan, generateMealPlan, generateExerciseGuide, generateHeightGuidance, getMotivation } from '../controllers/aiController.js';
+import { 
+    generateWorkoutPlan, 
+    generateMealPlan, 
+    generateExerciseGuide, 
+    generateHeightGuidance, 
+    getMotivation,
+    generateChallengeProtocol 
+} from '../controllers/aiController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -11,5 +17,6 @@ router.post('/meal-plan', generateMealPlan);
 router.post('/exercise', generateExerciseGuide);
 router.post('/height', generateHeightGuidance);
 router.post('/motivation', getMotivation);
+router.post('/challenge', generateChallengeProtocol);
 
 export default router;

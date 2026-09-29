@@ -8,6 +8,7 @@
   --color-secondary: #00FFFF;
   /* Neon Cyan */
   --color-dark: #121212;
+  /* Deep Cyber Dark */
   --color-light: #FAFAFA;
 }
 
@@ -24,4 +25,162 @@
   h6 {
     @apply font-heading font-bold;
   }
+}
+
+/* Beautiful Rich Markdown Typography for AI Responses, Challenges, and Plans */
+.markdown-body, .prose {
+  color: #e2e8f0;
+  line-height: 1.7;
+}
+
+.markdown-body h1, .prose h1 {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 1.75rem;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  letter-spacing: -0.02em;
+}
+
+.markdown-body h2, .prose h2 {
+  font-size: 1.45rem;
+  line-height: 2rem;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.markdown-body h3, .prose h3 {
+  font-size: 1.2rem;
+  line-height: 1.6rem;
+  font-weight: 700;
+  color: #fbbf24;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-body h4, .prose h4 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #f472b6;
+  margin-top: 1rem;
+  margin-bottom: 0.35rem;
+}
+
+.markdown-body p, .prose p {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  color: #cbd5e1;
+  font-size: 0.95rem;
+}
+
+.markdown-body strong, .prose strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.markdown-body em, .prose em {
+  color: #93c5fd;
+  font-style: italic;
+}
+
+.markdown-body ul, .prose ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-top: 0.6rem;
+  margin-bottom: 0.8rem;
+  space-y: 0.35rem;
+}
+
+.markdown-body ol, .prose ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-top: 0.6rem;
+  margin-bottom: 0.8rem;
+  space-y: 0.35rem;
+}
+
+.markdown-body li, .prose li {
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+  color: #cbd5e1;
+  font-size: 0.925rem;
+}
+
+.markdown-body li::marker, .prose li::marker {
+  color: #fb923c;
+}
+
+.markdown-body blockquote, .prose blockquote {
+  border-left: 4px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+  padding: 0.85rem 1.15rem;
+  margin: 1.25rem 0;
+  border-radius: 0 0.75rem 0.75rem 0;
+  color: #fef3c7;
+  font-style: normal;
+  font-size: 0.925rem;
+  box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.05);
+}
+
+.markdown-body table, .prose table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.25rem 0;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.6);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+.markdown-body th, .prose th {
+  background: rgba(30, 41, 59, 0.9);
+  color: #fbbf24;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+}
+
+.markdown-body td, .prose td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  color: #cbd5e1;
+  vertical-align: middle;
+}
+
+.markdown-body tr:nth-child(even), .prose tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.markdown-body tr:hover, .prose tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.markdown-body hr, .prose hr {
+  margin: 1.75rem 0;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.markdown-body code, .prose code {
+  background: rgba(30, 41, 59, 0.8);
+  color: #38bdf8;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.35rem;
+  font-size: 0.85em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  border: 1px solid rgba(56, 189, 248, 0.2);
 }
